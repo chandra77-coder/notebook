@@ -21,14 +21,8 @@ jobs:
         with:
           flutter-version: '3.16.0'
           channel: 'stable'
-      - name: Initialize and Build
+      - name: Build APK
         run: |
-          # Create a new project in a temporary directory
-          flutter create --project-name shopbook --platforms android temp_project
-          # Move Android boilerplate to current directory
-          cp -r temp_project/android .
-          # Cleanup
-          rm -rf temp_project
           # Build APK
           flutter pub get
           flutter build apk --release
