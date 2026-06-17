@@ -1,45 +1,35 @@
 name: Build and Release APK
-
 on:
   push:
     branches: [ main ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.16.0'
           channel: 'stable'
-
       - name: Initialize and Build
         run: |
           # Create a new project in a temporary directory
           flutter create --project-name shopbook --platforms android temp_project
-          
           # Move Android boilerplate to current directory
           cp -r temp_project/android .
-          
           # Cleanup
           rm -rf temp_project
-          
           # Build APK
           flutter pub get
-          flutter build apk --release --no-codesign
-
+          flutter build apk --release
       - name: Create Release
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
