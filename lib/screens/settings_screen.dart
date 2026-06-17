@@ -12,6 +12,86 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
+class _SmoothSettingsButton extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final Color backgroundColor;
+  final Future<void> Function() onPressed;
+
+  const _SmoothSettingsButton({
+    required this.icon,
+    required this.label,
+    required this.backgroundColor,
+    required this.onPressed,
+  });
+
+  @override
+  State<_SmoothSettingsButton> createState() => _SmoothSettingsButtonState();
+}
+
+class _SmoothSettingsButtonState extends State<_SmoothSettingsButton> {
+  bool _isPressed = false;
+  bool _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) {
+        setState(() => _isPressed = true);
+      },
+      onTapUp: (_) async {
+        setState(() => _isPressed = false);
+        if (!_isLoading) {
+          setState(() => _isLoading = true);
+          await widget.onPressed();
+          if (mounted) {
+            setState(() => _isLoading = false);
+          }
+        }
+      },
+      onTapCancel: () {
+        setState(() => _isPressed = false);
+      },
+      child: AnimatedScale(
+        scale: _isPressed ? 0.95 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: widget.backgroundColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: _isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(widget.icon, color: Colors.white, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
+}
+
 class _SettingsScreenState extends State<SettingsScreen> {
   late TextEditingController _shopNameController;
 
@@ -104,89 +184,71 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: () async {
-                          try {
-                            await dataProvider.exportDataAsJson();
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Data exported successfully to Downloads'),
-                                ),
-                              );
-                            }
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error: $e')),
-                              );
-                            }
+                    _SmoothSettingsButton(
+                      icon: Icons.download,
+                      label: 'Export Data as JSON',
+                      backgroundColor: Colors.blue,
+                      onPressed: () async {
+                        try {
+                          await dataProvider.exportDataAsJson();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Data exported successfully to Downloads'),
+                              ),
+                            );
                           }
-                        },
-                        icon: const Icon(Icons.download, color: Colors.white),
-                        label: const Text(
-                          'Export Data as JSON',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')),
+                            );
+                          }
+                        }
+                      },
                     ),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: () async {
-                          try {
-                            final result = await FilePicker.platform.pickFiles(
-                              type: FileType.custom,
-                              allowedExtensions: ['json'],
-                            );
+                    _SmoothSettingsButton(
+                      icon: Icons.upload,
+                      label: 'Import Data from JSON',
+                      backgroundColor: Colors.green,
+                      onPressed: () async {
+                        try {
+                          final result = await FilePicker.platform.pickFiles(
+                            type: FileType.custom,
+                            allowedExtensions: ['json'],
+                          );
 
-                            if (result != null && result.files.isNotEmpty) {
-                              final file = result.files.first;
-                              if (file.path != null) {
-                                try {
-                                  final importFile = File(file.path!);
-                                  await dataProvider.importDataFromJson(importFile);
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Data imported successfully'),
-                                      ),
-                                    );
-                                  }
-                                } catch (importError) {
-                                  if (mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Import error: $importError')),
-                                    );
-                                  }
+                          if (result != null && result.files.isNotEmpty) {
+                            final file = result.files.first;
+                            if (file.path != null) {
+                              try {
+                                final importFile = File(file.path!);
+                                await dataProvider.importDataFromJson(importFile);
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Data imported successfully'),
+                                    ),
+                                  );
+                                }
+                              } catch (importError) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Import error: $importError')),
+                                  );
                                 }
                               }
                             }
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error: $e')),
-                              );
-                            }
                           }
-                        },
-                        icon: const Icon(Icons.upload, color: Colors.white),
-                        label: const Text(
-                          'Import Data from JSON',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        ),
-                      ),
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error: $e')),
+                            );
+                          }
+                        }
+                      },
                     ),
                   ],
                 ),

@@ -97,6 +97,70 @@ class DueScreen extends StatelessWidget {
   }
 }
 
+class _SmoothPaymentButton extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final Color backgroundColor;
+  final VoidCallback onPressed;
+
+  const _SmoothPaymentButton({
+    required this.icon,
+    required this.label,
+    required this.backgroundColor,
+    required this.onPressed,
+  });
+
+  @override
+  State<_SmoothPaymentButton> createState() => _SmoothPaymentButtonState();
+}
+
+class _SmoothPaymentButtonState extends State<_SmoothPaymentButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) {
+        setState(() => _isPressed = true);
+      },
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onPressed();
+      },
+      onTapCancel: () {
+        setState(() => _isPressed = false);
+      },
+      child: AnimatedScale(
+        scale: _isPressed ? 0.95 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: widget.backgroundColor,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(widget.icon, color: Colors.white, size: 18),
+              const SizedBox(width: 6),
+              Text(
+                widget.label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _DueEntryCard extends StatelessWidget {
   final Entry entry;
 
@@ -173,10 +237,10 @@ class _DueEntryCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
+                child: _SmoothPaymentButton(
+                  icon: Icons.check,
+                  label: 'Cash Received',
+                  backgroundColor: Colors.green,
                   onPressed: () {
                     final updatedEntry = entry.copyWith(paymentType: 'Cash');
                     context.read<DataProvider>().updateEntry(updatedEntry);
@@ -184,16 +248,14 @@ class _DueEntryCard extends StatelessWidget {
                       const SnackBar(content: Text('Marked as cash received')),
                     );
                   },
-                  icon: const Icon(Icons.check),
-                  label: const Text('Cash Received'),
                 ),
               ),
               const SizedBox(width: 8),
               Expanded(
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                  ),
+                child: _SmoothPaymentButton(
+                  icon: Icons.check,
+                  label: 'Online',
+                  backgroundColor: Colors.blue,
                   onPressed: () {
                     final updatedEntry = entry.copyWith(paymentType: 'Online');
                     context.read<DataProvider>().updateEntry(updatedEntry);
@@ -201,8 +263,6 @@ class _DueEntryCard extends StatelessWidget {
                       const SnackBar(content: Text('Marked as online received')),
                     );
                   },
-                  icon: const Icon(Icons.check),
-                  label: const Text('Online'),
                 ),
               ),
             ],
