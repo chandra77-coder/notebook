@@ -1,7 +1,5 @@
-import '../models/entry.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import '../providers/data_provider.dart';
 
@@ -13,163 +11,172 @@ class SummaryScreen extends StatefulWidget {
 }
 
 class _SummaryScreenState extends State<SummaryScreen> {
-  String _selectedPeriod = 'This Week';
+  String _selectedPeriod = 'Today';
 
   @override
   Widget build(BuildContext context) {
     return Consumer<DataProvider>(
       builder: (context, dataProvider, _) {
-        late double totalEarned, totalSpent, netProfit;
-        late int totalEntries;
-        late List<Entry> entries;
+        double earned = 0;
+        double profit = 0;
+        int count = 0;
 
-        if (_selectedPeriod == 'This Week') {
-          entries = dataProvider.getThisWeekEntries();
-          totalEarned = dataProvider.getThisWeekEarned();
-          totalSpent = dataProvider.getThisWeekSpent();
+        if (_selectedPeriod == 'Today') {
+          earned = dataProvider.getTodayEarned();
+          profit = dataProvider.getTodayProfit();
+          count = dataProvider.getTodayEntries().length;
+        } else if (_selectedPeriod == 'This Week') {
+          earned = dataProvider.getThisWeekEarned();
+          profit = dataProvider.getThisWeekProfit();
+          count = dataProvider.getThisWeekEntries().length;
         } else if (_selectedPeriod == 'This Month') {
-          entries = dataProvider.getThisMonthEntries();
-          totalEarned = dataProvider.getThisMonthEarned();
-          totalSpent = dataProvider.getThisMonthSpent();
+          earned = dataProvider.getThisMonthEarned();
+          profit = dataProvider.getThisMonthProfit();
+          count = dataProvider.getThisMonthEntries().length;
         } else if (_selectedPeriod == 'Last Month') {
-          entries = dataProvider.getLastMonthEntries();
-          totalEarned = dataProvider.getLastMonthEarned();
-          totalSpent = dataProvider.getLastMonthSpent();
-        } else {
-          entries = dataProvider.getTodayEntries();
-          totalEarned = dataProvider.getTodayEarned();
-          totalSpent = dataProvider.getTodaySpent();
+          earned = dataProvider.getLastMonthEarned();
+          profit = dataProvider.getLastMonthProfit();
+          count = dataProvider.getLastMonthEntries().length;
         }
 
-        netProfit = totalEarned - totalSpent;
-        totalEntries = entries.length;
+        return Scaffold(
+          backgroundColor: const Color(0xFFF5F7F6),
+          appBar: AppBar(
+            title: const Text('Business Summary'),
+            centerTitle: true,
+          ),
+          body: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Period Selector
+                Container(
+                  color: const Color(0xFF0F6E56),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        _PeriodChip(
+                          label: 'Today',
+                          isSelected: _selectedPeriod == 'Today',
+                          onTap: () => setState(() => _selectedPeriod = 'Today'),
+                        ),
+                        _PeriodChip(
+                          label: 'This Week',
+                          isSelected: _selectedPeriod == 'This Week',
+                          onTap: () => setState(() => _selectedPeriod = 'This Week'),
+                        ),
+                        _PeriodChip(
+                          label: 'This Month',
+                          isSelected: _selectedPeriod == 'This Month',
+                          onTap: () => setState(() => _selectedPeriod = 'This Month'),
+                        ),
+                        _PeriodChip(
+                          label: 'Last Month',
+                          isSelected: _selectedPeriod == 'Last Month',
+                          onTap: () => setState(() => _selectedPeriod = 'Last Month'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
-        return SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Period toggle
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    _PeriodButton(
-                      label: 'This Week',
-                      isSelected: _selectedPeriod == 'This Week',
-                      onTap: () {
-                        setState(() => _selectedPeriod = 'This Week');
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    _PeriodButton(
-                      label: 'This Month',
-                      isSelected: _selectedPeriod == 'This Month',
-                      onTap: () {
-                        setState(() => _selectedPeriod = 'This Month');
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    _PeriodButton(
-                      label: 'Last Month',
-                      isSelected: _selectedPeriod == 'Last Month',
-                      onTap: () {
-                        setState(() => _selectedPeriod = 'Last Month');
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              // Stat cards
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _SummaryStatCard(
-                            title: 'Total Earned',
-                            amount: totalEarned,
-                            color: Colors.green,
-                          ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Main Stat Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _SummaryStatCard(
-                            title: 'Total Spent',
-                            amount: totalSpent,
-                            color: Colors.red,
-                          ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'Total Revenue',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '₹${NumberFormat('#,##,###.##').format(earned)}',
+                              style: const TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0F6E56),
+                                letterSpacing: -1,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            const Divider(),
+                            const SizedBox(height: 24),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                _StatItem(
+                                  label: 'Net Profit',
+                                  value: '₹${profit.toStringAsFixed(0)}',
+                                  color: Colors.blue.shade700,
+                                ),
+                                Container(width: 1, height: 40, color: Colors.grey.shade200),
+                                _StatItem(
+                                  label: 'Transactions',
+                                  value: count.toString(),
+                                  color: Colors.orange.shade700,
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _SummaryStatCard(
-                            title: 'Net Profit',
-                            amount: netProfit,
-                            color: Colors.blue,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: _SummaryStatCard(
-                            title: 'Total Entries',
-                            amount: totalEntries.toDouble(),
-                            color: Colors.purple,
-                            isCount: true,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Bar chart
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Daily Earned vs Spent',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      height: 300,
-                      child: _BarChartWidget(entries: entries),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Service breakdown
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Service Type Breakdown',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      
+                      const SizedBox(height: 32),
+                      const Text(
+                        'Insights',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.5,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    _ServiceBreakdownList(entries: entries),
-                  ],
+                      const SizedBox(height: 16),
+                      _InsightCard(
+                        icon: Icons.auto_graph,
+                        title: 'Performance',
+                        description: count > 0 
+                          ? 'Average transaction value is ₹${(earned/count).toStringAsFixed(0)}'
+                          : 'No data available for this period',
+                        color: Colors.purple,
+                      ),
+                      const SizedBox(height: 12),
+                      _InsightCard(
+                        icon: Icons.lightbulb_outline,
+                        title: 'Quick Tip',
+                        description: 'Consistent tracking helps in better financial planning.',
+                        color: Colors.amber.shade800,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 80),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -177,12 +184,12 @@ class _SummaryScreenState extends State<SummaryScreen> {
   }
 }
 
-class _PeriodButton extends StatelessWidget {
+class _PeriodChip extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _PeriodButton({
+  const _PeriodChip({
     required this.label,
     required this.isSelected,
     required this.onTap,
@@ -193,17 +200,18 @@ class _PeriodButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF0F6E56) : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(8),
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 12,
+            color: isSelected ? const Color(0xFF0F6E56) : Colors.white,
             fontWeight: FontWeight.bold,
-            color: isSelected ? Colors.white : Colors.black,
+            fontSize: 13,
           ),
         ),
       ),
@@ -211,17 +219,54 @@ class _PeriodButton extends StatelessWidget {
   }
 }
 
-class _SummaryStatCard extends StatelessWidget {
-  final String title;
-  final double amount;
+class _StatItem extends StatelessWidget {
+  final String label;
+  final String value;
   final Color color;
-  final bool isCount;
 
-  const _SummaryStatCard({
-    required this.title,
-    required this.amount,
+  const _StatItem({
+    required this.label,
+    required this.value,
     required this.color,
-    this.isCount = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade500,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InsightCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String description;
+  final Color color;
+
+  const _InsightCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.color,
   });
 
   @override
@@ -229,24 +274,40 @@ class _SummaryStatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            title,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(height: 8),
-          Text(
-            isCount ? '${amount.toInt()}' : '₹${amount.toStringAsFixed(0)}',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: color,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                Text(
+                  description,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -254,158 +315,3 @@ class _SummaryStatCard extends StatelessWidget {
     );
   }
 }
-
-class _BarChartWidget extends StatelessWidget {
-  final List<Entry> entries;
-
-  const _BarChartWidget({required this.entries});
-
-  @override
-  Widget build(BuildContext context) {
-    // Group entries by date
-    final groupedByDate = <DateTime, double>{};
-    for (final entry in entries) {
-      final dateKey = DateTime(entry.date.year, entry.date.month, entry.date.day);
-      groupedByDate.update(dateKey, (value) => value + entry.amount, ifAbsent: () => entry.amount);
-    }
-
-    final sortedDates = groupedByDate.keys.toList()..sort();
-    final maxAmount = groupedByDate.values.isEmpty ? 1.0 : groupedByDate.values.reduce((a, b) => a > b ? a : b);
-
-    return BarChart(
-      BarChartData(
-        barGroups: List.generate(
-          sortedDates.length,
-          (index) => BarChartGroupData(
-            x: index,
-            barRods: [
-              BarChartRodData(
-                toY: groupedByDate[sortedDates[index]] ?? 0,
-                color: const Color(0xFF0F6E56),
-                width: 20,
-              ),
-            ],
-          ),
-        ),
-        maxY: maxAmount * 1.2,
-        titlesData: FlTitlesData(
-          leftTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                return Text(
-                  '₹${value.toInt()}',
-                  style: const TextStyle(fontSize: 10),
-                );
-              },
-            ),
-          ),
-          bottomTitles: AxisTitles(
-            sideTitles: SideTitles(
-              showTitles: true,
-              getTitlesWidget: (value, meta) {
-                final index = value.toInt();
-                if (index >= 0 && index < sortedDates.length) {
-                  return Text(
-                    DateFormat('d/M').format(sortedDates[index]),
-                    style: const TextStyle(fontSize: 10),
-                  );
-                }
-                return const Text('');
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ServiceBreakdownList extends StatelessWidget {
-  final List<Entry> entries;
-
-  const _ServiceBreakdownList({required this.entries});
-
-  @override
-  Widget build(BuildContext context) {
-    // Group by service type
-    final groupedByService = <String, double>{};
-    for (final entry in entries) {
-      groupedByService.update(entry.serviceType, (value) => value + entry.amount,
-          ifAbsent: () => entry.amount);
-    }
-
-    final totalAmount = groupedByService.values.fold(0.0, (a, b) => a + b);
-    final sortedServices = groupedByService.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
-    final colors = [
-      Colors.red,
-      Colors.green,
-      Colors.blue,
-      Colors.orange,
-      Colors.purple,
-      Colors.teal,
-    ];
-
-    return Column(
-      children: List.generate(
-        sortedServices.length,
-        (index) {
-          final service = sortedServices[index];
-          final percentage = (service.value / totalAmount * 100);
-          final color = colors[index % colors.length];
-
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: color,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        service.key,
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                    Text(
-                      '₹${service.value.toStringAsFixed(0)}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: percentage / 100,
-                    minHeight: 6,
-                    backgroundColor: color.withOpacity(0.2),
-                    valueColor: AlwaysStoppedAnimation(color),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${percentage.toStringAsFixed(1)}%',
-                  style: const TextStyle(fontSize: 10, color: Colors.grey),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// Import Entry from models

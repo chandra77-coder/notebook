@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     });
 
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 800),
       vsync: this,
     );
 
@@ -49,152 +49,110 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         final today = DateTime.now();
         final todayEntries = dataProvider.getTodayEntries();
         final todayEarned = dataProvider.getTodayEarned();
-        final todayProfit = dataProvider.getTodayProfit();
+        final todaySpent = 0.0; // Assuming spent is 0 for now as per data_provider
+        final todayProfit = todayEarned - todaySpent;
         final totalDue = dataProvider.getTotalDue();
 
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with date - Smooth animation
-                _AnimatedHeader(
-                  shopName: themeProvider.shopName,
-                  today: today,
-                  todayEarned: todayEarned,
-                ),
-                const SizedBox(height: 16),
-                // Stat cards with staggered animation
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _AnimatedStatCard(
-                        delay: 0,
-                        title: 'Earned',
-                        amount: todayEarned,
-                        color: Colors.green,
-                      ),
-                      _AnimatedStatCard(
-                        delay: 1,
-                        title: 'Spent',
-                        amount: 0,
-                        color: Colors.red,
-                      ),
-                      _AnimatedStatCard(
-                        delay: 2,
-                        title: 'Profit',
-                        amount: todayProfit,
-                        color: Colors.blue,
-                      ),
-                    ],
+        return Scaffold(
+          body: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Premium Header
+                  _PremiumHeader(
+                    shopName: themeProvider.shopName,
+                    today: today,
+                    todayEarned: todayEarned,
                   ),
-                ),
-                const SizedBox(height: 16),
-                // Due alert banner with smooth animation
-                if (totalDue > 0)
+                  
+                  // Main Content
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _AnimatedDueBanner(totalDue: totalDue),
-                  ),
-                const SizedBox(height: 16),
-                // Quick add buttons
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Quick Add',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Stats Section
+                        const Text(
+                          'Today\'s Overview',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: -0.5,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        height: 100,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
+                        const SizedBox(height: 16),
+                        Row(
                           children: [
-                            _SmoothQuickAddButton(
-                              icon: Icons.add,
-                              label: 'New Entry',
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation, secondaryAnimation) =>
-                                        const AddEntryScreen(),
-                                    transitionsBuilder:
-                                        (context, animation, secondaryAnimation, child) {
-                                      return SlideTransition(
-                                        position: Tween<Offset>(
-                                          begin: const Offset(0, 1),
-                                          end: Offset.zero,
-                                        ).animate(
-                                          CurvedAnimation(
-                                            parent: animation,
-                                            curve: Curves.easeOutCubic,
-                                          ),
-                                        ),
-                                        child: child,
-                                      );
-                                    },
-                                  ),
-                                );
-                              },
+                            Expanded(
+                              child: _ModernStatCard(
+                                title: 'Earned',
+                                amount: todayEarned,
+                                color: const Color(0xFF0F6E56),
+                                icon: Icons.trending_up,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _ModernStatCard(
+                                title: 'Profit',
+                                amount: todayProfit,
+                                color: Colors.blue.shade700,
+                                icon: Icons.account_balance_wallet,
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Today entries list
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Today\'s Entries',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 12),
+                        if (totalDue > 0)
+                          _ModernDueCard(totalDue: totalDue),
+                        
+                        const SizedBox(height: 32),
+                        
+                        // Today's Entries Section
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Recent Transactions',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // Navigate to History
+                              },
+                              child: const Text('View All'),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      if (todayEntries.isEmpty)
-                        const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(20),
-                            child: Text('No entries yet'),
+                        const SizedBox(height: 8),
+                        if (todayEntries.isEmpty)
+                          _EmptyState()
+                        else
+                          ListView.builder(
+                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: todayEntries.length,
+                            itemBuilder: (context, index) {
+                              return _PremiumEntryCard(
+                                entry: todayEntries[index],
+                                delay: index,
+                              );
+                            },
                           ),
-                        )
-                      else
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: todayEntries.length,
-                          itemBuilder: (context, index) {
-                            final entry = todayEntries[index];
-                            return _SmoothEntryCard(
-                              entry: entry,
-                              delay: index,
-                            );
-                          },
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 80),
-              ],
+                  const SizedBox(height: 100),
+                ],
+              ),
             ),
           ),
         );
@@ -203,556 +161,351 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-class _AnimatedHeader extends StatefulWidget {
+class _PremiumHeader extends StatelessWidget {
   final String shopName;
   final DateTime today;
   final double todayEarned;
 
-  const _AnimatedHeader({
+  const _PremiumHeader({
     required this.shopName,
     required this.today,
     required this.todayEarned,
   });
 
   @override
-  State<_AnimatedHeader> createState() => _AnimatedHeaderState();
-}
-
-class _AnimatedHeaderState extends State<_AnimatedHeader> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: Container(
-        color: const Color(0xFF0F6E56),
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.shopName,
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              DateFormat('EEEE, d MMMM yyyy').format(widget.today),
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              '₹${widget.todayEarned.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const Text(
-              'Today\'s Earnings',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-              ),
-            ),
-          ],
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F6E56),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
         ),
+      ),
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    shopName,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  Text(
+                    DateFormat('EEEE, d MMMM').format(today),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white.withOpacity(0.7),
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Icon(Icons.notifications_none, color: Colors.white),
+                  onPressed: () {},
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 40),
+          Text(
+            'Total Earnings Today',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.white.withOpacity(0.7),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '₹${NumberFormat('#,##,###.##').format(todayEarned)}',
+            style: const TextStyle(
+              fontSize: 42,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              letterSpacing: -1,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _AnimatedStatCard extends StatefulWidget {
-  final int delay;
+class _ModernStatCard extends StatelessWidget {
   final String title;
   final double amount;
   final Color color;
+  final IconData icon;
 
-  const _AnimatedStatCard({
-    required this.delay,
+  const _ModernStatCard({
     required this.title,
     required this.amount,
     required this.color,
+    required this.icon,
   });
 
   @override
-  State<_AnimatedStatCard> createState() => _AnimatedStatCardState();
-}
-
-class _AnimatedStatCardState extends State<_AnimatedStatCard> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _slideAnimation;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-
-    _slideAnimation = Tween<double>(begin: 50, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
-
-    Future.delayed(Duration(milliseconds: widget.delay * 100), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Transform.translate(
-        offset: Offset(0, _slideAnimation.value),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: widget.color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: widget.color.withOpacity(0.3)),
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.title,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '₹${widget.amount.toStringAsFixed(0)}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: widget.color,
-                ),
-              ),
-            ],
+        ],
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: color, size: 20),
           ),
-        ),
+          const SizedBox(height: 12),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '₹${amount.toStringAsFixed(0)}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _AnimatedDueBanner extends StatefulWidget {
+class _ModernDueCard extends StatelessWidget {
   final double totalDue;
 
-  const _AnimatedDueBanner({required this.totalDue});
-
-  @override
-  State<_AnimatedDueBanner> createState() => _AnimatedDueBannerState();
-}
-
-class _AnimatedDueBannerState extends State<_AnimatedDueBanner> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _slideAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 700),
-      vsync: this,
-    );
-
-    _slideAnimation = Tween<double>(begin: -20, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  const _ModernDueCard({required this.totalDue});
 
   @override
   Widget build(BuildContext context) {
-    return Transform.translate(
-      offset: Offset(_slideAnimation.value, 0),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.orange.shade100,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.orange.shade300),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.orange.shade400, Colors.orange.shade700],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.orange.shade700),
-            const SizedBox(width: 12),
-            Column(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Due Payments',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  'Pending Payments',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
                 ),
                 Text(
-                  '₹${widget.totalDue.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontSize: 16,
+                  '₹${totalDue.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.orange.shade700,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 16),
+        ],
       ),
     );
   }
 }
 
-class _SmoothQuickAddButton extends StatefulWidget {
-  final IconData icon;
-  final String label;
-  final String? price;
-  final VoidCallback onTap;
-
-  const _SmoothQuickAddButton({
-    required this.icon,
-    required this.label,
-    this.price,
-    required this.onTap,
-  });
-
-  @override
-  State<_SmoothQuickAddButton> createState() => _SmoothQuickAddButtonState();
-}
-
-class _SmoothQuickAddButtonState extends State<_SmoothQuickAddButton> {
-  bool _isPressed = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) {
-        setState(() => _isPressed = true);
-      },
-      onTapUp: (_) {
-        setState(() => _isPressed = false);
-        widget.onTap();
-      },
-      onTapCancel: () {
-        setState(() => _isPressed = false);
-      },
-      child: AnimatedScale(
-        scale: _isPressed ? 0.95 : 1.0,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeInOut,
-        child: Container(
-          width: 80,
-          margin: const EdgeInsets.only(right: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F6E56).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF0F6E56).withOpacity(0.3)),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(widget.icon, color: const Color(0xFF0F6E56), size: 24),
-              const SizedBox(height: 4),
-              Text(
-                widget.label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w500),
-              ),
-              if (widget.price != null) ...[
-                const SizedBox(height: 2),
-                Text(
-                  widget.price!,
-                  style: const TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0F6E56),
-                  ),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _SmoothEntryCard extends StatefulWidget {
+class _PremiumEntryCard extends StatelessWidget {
   final Entry entry;
   final int delay;
 
-  const _SmoothEntryCard({
+  const _PremiumEntryCard({
     required this.entry,
     required this.delay,
   });
 
   @override
-  State<_SmoothEntryCard> createState() => _SmoothEntryCardState();
-}
-
-class _SmoothEntryCardState extends State<_SmoothEntryCard> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _slideAnimation;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-
-    _slideAnimation = Tween<double>(begin: 50, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
-
-    Future.delayed(Duration(milliseconds: widget.delay * 80), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final paymentColor = widget.entry.paymentType == 'Cash'
-        ? Colors.green
-        : widget.entry.paymentType == 'Online'
-            ? Colors.blue
-            : Colors.orange;
+    final paymentColor = entry.paymentType == 'Cash'
+        ? const Color(0xFF0F6E56)
+        : entry.paymentType == 'Online'
+            ? Colors.blue.shade700
+            : Colors.orange.shade700;
 
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Transform.translate(
-        offset: Offset(0, _slideAnimation.value),
-        child: Dismissible(
-          key: Key(widget.entry.id),
-          direction: DismissDirection.endToStart,
-          background: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(
-              color: Colors.red.shade400,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 16),
-            child: const Icon(Icons.delete, color: Colors.white),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          onDismissed: (direction) {
-            context.read<DataProvider>().deleteEntry(widget.entry.id);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Entry deleted'),
-                action: SnackBarAction(
-                  label: 'Undo',
-                  onPressed: () {
-                    context.read<DataProvider>().undoDeleteEntry();
-                  },
-                ),
-              ),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
             decoration: BoxDecoration(
+              color: paymentColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-              color: Theme.of(context).cardColor,
             ),
+            child: Icon(
+              entry.paymentType == 'Due' ? Icons.timer_outlined : Icons.receipt_long_outlined,
+              color: paymentColor,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: paymentColor,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.entry.serviceType,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            widget.entry.customerName,
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      '₹${widget.entry.amount.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-                if (widget.entry.note.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.entry.note,
-                    style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                Text(
+                  entry.serviceType,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
                   ),
-                ],
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: paymentColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        widget.entry.paymentType,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: paymentColor,
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, size: 16),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (context, animation, secondaryAnimation) =>
-                                    AddEntryScreen(entry: widget.entry),
-                                transitionsBuilder:
-                                    (context, animation, secondaryAnimation, child) {
-                                  return SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(0, 1),
-                                      end: Offset.zero,
-                                    ).animate(
-                                      CurvedAnimation(
-                                        parent: animation,
-                                        curve: Curves.easeOutCubic,
-                                      ),
-                                    ),
-                                    child: child,
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, size: 16),
-                          onPressed: () {
-                            context.read<DataProvider>().deleteEntry(widget.entry.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('Entry deleted'),
-                                action: SnackBarAction(
-                                  label: 'Undo',
-                                  onPressed: () {
-                                    context.read<DataProvider>().undoDeleteEntry();
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        if (widget.entry.paymentType == 'Due')
-                          IconButton(
-                            icon: const Icon(Icons.check_circle, size: 16),
-                            onPressed: () {
-                              final updatedEntry = widget.entry.copyWith(paymentType: 'Cash');
-                              context.read<DataProvider>().updateEntry(updatedEntry);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Marked as received')),
-                              );
-                            },
-                          ),
-                      ],
-                    ),
-                  ],
+                ),
+                Text(
+                  entry.customerName.isEmpty ? 'General Customer' : entry.customerName,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ],
             ),
           ),
-        ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '₹${entry.amount.toStringAsFixed(0)}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: paymentColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  entry.paymentType,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: paymentColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Column(
+        children: [
+          Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text(
+            'No transactions today',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Tap the button below to add your first entry',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey.shade400,
+            ),
+          ),
+        ],
       ),
     );
   }

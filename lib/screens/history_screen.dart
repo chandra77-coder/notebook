@@ -15,29 +15,6 @@ class HistoryScreen extends StatefulWidget {
 class _HistoryScreenState extends State<HistoryScreen> with TickerProviderStateMixin {
   String _searchQuery = '';
   String _selectedFilter = 'All';
-  late AnimationController _fadeController;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
-    );
-
-    _fadeController.forward();
-  }
-
-  @override
-  void dispose() {
-    _fadeController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,273 +55,174 @@ class _HistoryScreenState extends State<HistoryScreen> with TickerProviderStateM
           groupedEntries.putIfAbsent(dateKey, () => []).add(entry);
         }
 
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Search bar with smooth animation
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: _AnimatedSearchBar(
-                    onChanged: (value) {
-                      setState(() => _searchQuery = value);
-                    },
-                  ),
-                ),
-                // Filter pills with smooth transitions
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: [
-                        _SmoothFilterPill(
-                          label: 'All',
-                          isSelected: _selectedFilter == 'All',
-                          onTap: () {
-                            setState(() => _selectedFilter = 'All');
-                          },
-                        ),
-                        _SmoothFilterPill(
-                          label: 'Today',
-                          isSelected: _selectedFilter == 'Today',
-                          onTap: () {
-                            setState(() => _selectedFilter = 'Today');
-                          },
-                        ),
-                        _SmoothFilterPill(
-                          label: 'This Week',
-                          isSelected: _selectedFilter == 'This Week',
-                          onTap: () {
-                            setState(() => _selectedFilter = 'This Week');
-                          },
-                        ),
-                        _SmoothFilterPill(
-                          label: 'This Month',
-                          isSelected: _selectedFilter == 'This Month',
-                          onTap: () {
-                            setState(() => _selectedFilter = 'This Month');
-                          },
-                        ),
-                        _SmoothFilterPill(
-                          label: 'Cash',
-                          isSelected: _selectedFilter == 'Cash',
-                          onTap: () {
-                            setState(() => _selectedFilter = 'Cash');
-                          },
-                        ),
-                        _SmoothFilterPill(
-                          label: 'Online',
-                          isSelected: _selectedFilter == 'Online',
-                          onTap: () {
-                            setState(() => _selectedFilter = 'Online');
-                          },
-                        ),
-                        _SmoothFilterPill(
-                          label: 'Due',
-                          isSelected: _selectedFilter == 'Due',
-                          onTap: () {
-                            setState(() => _selectedFilter = 'Due');
-                          },
-                        ),
-                      ],
+        return Scaffold(
+          backgroundColor: const Color(0xFFF5F7F6),
+          appBar: AppBar(
+            title: const Text('Transaction History'),
+            centerTitle: true,
+          ),
+          body: Column(
+            children: [
+              // Search and Filter Header
+              Container(
+                color: const Color(0xFF0F6E56),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                child: Column(
+                  children: [
+                    _ModernSearchBar(
+                      onChanged: (value) => setState(() => _searchQuery = value),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                // Entries grouped by date
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: groupedEntries.entries.map((entry) {
-                      final date = entry.key;
-                      final dayName = DateFormat('EEEE').format(date);
-                      final formattedDate = DateFormat('d MMMM yyyy').format(date);
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    const SizedBox(height: 16),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      child: Row(
                         children: [
-                          Text(
-                            '$dayName $formattedDate',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                            ),
+                          _ModernFilterChip(
+                            label: 'All',
+                            isSelected: _selectedFilter == 'All',
+                            onTap: () => setState(() => _selectedFilter = 'All'),
                           ),
-                          const SizedBox(height: 8),
-                          ...entry.value.asMap().entries.map((e) {
-                            return _SmoothHistoryEntryCard(
-                              entry: e.value,
-                              delay: e.key,
-                            );
-                          }).toList(),
-                          const SizedBox(height: 16),
+                          _ModernFilterChip(
+                            label: 'Today',
+                            isSelected: _selectedFilter == 'Today',
+                            onTap: () => setState(() => _selectedFilter = 'Today'),
+                          ),
+                          _ModernFilterChip(
+                            label: 'This Week',
+                            isSelected: _selectedFilter == 'This Week',
+                            onTap: () => setState(() => _selectedFilter = 'This Week'),
+                          ),
+                          _ModernFilterChip(
+                            label: 'Cash',
+                            isSelected: _selectedFilter == 'Cash',
+                            onTap: () => setState(() => _selectedFilter = 'Cash'),
+                          ),
+                          _ModernFilterChip(
+                            label: 'Online',
+                            isSelected: _selectedFilter == 'Online',
+                            onTap: () => setState(() => _selectedFilter = 'Online'),
+                          ),
+                          _ModernFilterChip(
+                            label: 'Due',
+                            isSelected: _selectedFilter == 'Due',
+                            onTap: () => setState(() => _selectedFilter = 'Due'),
+                          ),
                         ],
-                      );
-                    }).toList(),
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 80),
-              ],
-            ),
+              ),
+
+              // History List
+              Expanded(
+                child: filteredEntries.isEmpty
+                  ? _EmptyHistoryState()
+                  : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.all(20),
+                      itemCount: groupedEntries.length,
+                      itemBuilder: (context, index) {
+                        final date = groupedEntries.keys.elementAt(index);
+                        final entries = groupedEntries[date]!;
+                        
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.only(left: 4, bottom: 12, top: 8),
+                              child: Text(
+                                _formatDateHeader(date),
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey.shade500,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            ...entries.map((entry) => _ModernHistoryCard(entry: entry)).toList(),
+                            const SizedBox(height: 12),
+                          ],
+                        );
+                      },
+                    ),
+              ),
+            ],
           ),
         );
       },
     );
   }
+
+  String _formatDateHeader(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final checkDate = DateTime(date.year, date.month, date.day);
+
+    if (checkDate == today) return 'TODAY';
+    if (checkDate == yesterday) return 'YESTERDAY';
+    return DateFormat('EEEE, d MMMM').format(date).toUpperCase();
+  }
 }
 
-class _AnimatedSearchBar extends StatefulWidget {
+class _ModernSearchBar extends StatelessWidget {
   final Function(String) onChanged;
 
-  const _AnimatedSearchBar({required this.onChanged});
-
-  @override
-  State<_AnimatedSearchBar> createState() => _AnimatedSearchBarState();
-}
-
-class _AnimatedSearchBarState extends State<_AnimatedSearchBar> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  const _ModernSearchBar({required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnimation,
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: TextField(
-          onChanged: widget.onChanged,
-          decoration: InputDecoration(
-            hintText: 'Search by customer or service',
-            prefixIcon: const Icon(Icons.search),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Colors.grey.shade300),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xFF0F6E56),
-                width: 2,
-              ),
-            ),
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: TextField(
+        onChanged: onChanged,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          hintText: 'Search transactions...',
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
+          prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.7)),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
   }
 }
 
-class _SmoothFilterPill extends StatefulWidget {
+class _ModernFilterChip extends StatelessWidget {
   final String label;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _SmoothFilterPill({
+  const _ModernFilterChip({
     required this.label,
     required this.isSelected,
     required this.onTap,
   });
 
   @override
-  State<_SmoothFilterPill> createState() => _SmoothFilterPillState();
-}
-
-class _SmoothFilterPillState extends State<_SmoothFilterPill>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void didUpdateWidget(_SmoothFilterPill oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.isSelected != oldWidget.isSelected) {
-      if (widget.isSelected) {
-        _controller.forward();
-      } else {
-        _controller.reverse();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        widget.onTap();
-      },
-      child: ScaleTransition(
-        scale: _scaleAnimation,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.only(right: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: widget.isSelected ? const Color(0xFF0F6E56) : Colors.grey.shade200,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            widget.label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: widget.isSelected ? Colors.white : Colors.black,
-            ),
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.white.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? const Color(0xFF0F6E56) : Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 12,
           ),
         ),
       ),
@@ -352,237 +230,115 @@ class _SmoothFilterPillState extends State<_SmoothFilterPill>
   }
 }
 
-class _SmoothHistoryEntryCard extends StatefulWidget {
+class _ModernHistoryCard extends StatelessWidget {
   final Entry entry;
-  final int delay;
 
-  const _SmoothHistoryEntryCard({
-    required this.entry,
-    required this.delay,
-  });
-
-  @override
-  State<_SmoothHistoryEntryCard> createState() => _SmoothHistoryEntryCardState();
-}
-
-class _SmoothHistoryEntryCardState extends State<_SmoothHistoryEntryCard>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _slideAnimation;
-  late Animation<double> _fadeAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
-      vsync: this,
-    );
-
-    _slideAnimation = Tween<double>(begin: 50, end: 0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-
-    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
-
-    Future.delayed(Duration(milliseconds: widget.delay * 80), () {
-      if (mounted) {
-        _controller.forward();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
+  const _ModernHistoryCard({required this.entry});
 
   @override
   Widget build(BuildContext context) {
-    final paymentColor = widget.entry.paymentType == 'Cash'
-        ? Colors.green
-        : widget.entry.paymentType == 'Online'
-            ? Colors.blue
-            : Colors.orange;
+    final paymentColor = entry.paymentType == 'Cash'
+        ? const Color(0xFF0F6E56)
+        : entry.paymentType == 'Online'
+            ? Colors.blue.shade700
+            : Colors.orange.shade700;
 
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: Transform.translate(
-        offset: Offset(0, _slideAnimation.value),
-        child: Dismissible(
-          key: Key(widget.entry.id),
-          direction: DismissDirection.endToStart,
-          background: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            decoration: BoxDecoration(
-              color: Colors.red.shade400,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 16),
-            child: const Icon(Icons.delete, color: Colors.white),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
-          onDismissed: (direction) {
-            context.read<DataProvider>().deleteEntry(widget.entry.id);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Entry deleted'),
-                action: SnackBarAction(
-                  label: 'Undo',
-                  onPressed: () {
-                    context.read<DataProvider>().undoDeleteEntry();
-                  },
-                ),
-              ),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.only(bottom: 8),
-            padding: const EdgeInsets.all(12),
+        ],
+        border: Border.all(color: Colors.grey.shade100),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
+              color: paymentColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
-              color: Theme.of(context).cardColor,
             ),
+            child: Icon(
+              entry.paymentType == 'Due' ? Icons.timer_outlined : Icons.receipt_long_outlined,
+              color: paymentColor,
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: paymentColor,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.entry.serviceType,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          Text(
-                            widget.entry.customerName,
-                            style: const TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                          Text(
-                            DateFormat('hh:mm a').format(widget.entry.date),
-                            style: const TextStyle(fontSize: 10, color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(
-                      '₹${widget.entry.amount.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-                if (widget.entry.note.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.entry.note,
-                    style: const TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
+                Text(
+                  entry.serviceType,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
                   ),
-                ],
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: paymentColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        widget.entry.paymentType,
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: paymentColor,
-                        ),
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit, size: 16),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (context, animation, secondaryAnimation) =>
-                                    AddEntryScreen(entry: widget.entry),
-                                transitionsBuilder:
-                                    (context, animation, secondaryAnimation, child) {
-                                  return SlideTransition(
-                                    position: Tween<Offset>(
-                                      begin: const Offset(0, 1),
-                                      end: Offset.zero,
-                                    ).animate(
-                                      CurvedAnimation(
-                                        parent: animation,
-                                        curve: Curves.easeOutCubic,
-                                      ),
-                                    ),
-                                    child: child,
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, size: 16),
-                          onPressed: () {
-                            context.read<DataProvider>().deleteEntry(widget.entry.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: const Text('Entry deleted'),
-                                action: SnackBarAction(
-                                  label: 'Undo',
-                                  onPressed: () {
-                                    context.read<DataProvider>().undoDeleteEntry();
-                                  },
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                        if (widget.entry.paymentType == 'Due')
-                          IconButton(
-                            icon: const Icon(Icons.check_circle, size: 16),
-                            onPressed: () {
-                              final updatedEntry = widget.entry.copyWith(paymentType: 'Cash');
-                              context.read<DataProvider>().updateEntry(updatedEntry);
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Marked as received')),
-                              );
-                            },
-                          ),
-                      ],
-                    ),
-                  ],
+                ),
+                Text(
+                  entry.customerName.isEmpty ? 'General Customer' : entry.customerName,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ],
             ),
           ),
-        ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '₹${entry.amount.toStringAsFixed(0)}',
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                DateFormat('hh:mm a').format(entry.date),
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Colors.grey.shade400,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EmptyHistoryState extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.history_toggle_off, size: 64, color: Colors.grey.shade300),
+          const SizedBox(height: 16),
+          Text(
+            'No transactions found',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
