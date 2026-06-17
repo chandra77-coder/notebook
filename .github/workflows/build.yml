@@ -24,24 +24,15 @@ jobs:
           flutter-version: '3.16.0'
           channel: 'stable'
 
-      - name: Initialize and Build APK
+      - name: Create Project and Build
         run: |
-          # Create a temporary project to get the boilerplate
-          mkdir temp_project
-          cd temp_project
-          flutter create --project-name shopbook --platforms android .
-          cd ..
+          # We are in the root of the repo
+          # Create a new project in a subfolder
+          flutter create --project-name shopbook .
           
-          # Copy the boilerplate to the root, but keep our lib and pubspec
-          cp -r temp_project/android .
-          cp temp_project/pubspec.yaml .
-          rm -rf temp_project
+          # The above might fail if files exist, so let's be more surgical
+          # But let's try to just run it and see.
           
-          # Restore our specific dependencies in pubspec.yaml
-          # (We'll just overwrite it with our original one since it's already there)
-          git checkout pubspec.yaml
-          
-          # Build the APK
           flutter pub get
           flutter build apk --release --no-codesign
 
