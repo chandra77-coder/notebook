@@ -39,17 +39,21 @@ class Entry {
   }
 
   factory Entry.fromMap(Map<String, dynamic> map) {
+    // Safe type conversion for amount (can be int or double from database)
+    final amountValue = map['amount'];
+    final amount = amountValue is double ? amountValue : (amountValue as num).toDouble();
+
     return Entry(
-      id: map['id'] as String,
-      serviceType: map['serviceType'] as String,
-      customerName: map['customerName'] as String,
-      amount: map['amount'] as double,
-      note: map['note'] as String,
-      paymentType: map['paymentType'] as String,
-      personId: map['personId'] as String,
-      date: DateTime.parse(map['date'] as String),
-      dayName: map['dayName'] as String,
-      isDeleted: (map['isDeleted'] as int) == 1,
+      id: map['id'] as String? ?? '',
+      serviceType: map['serviceType'] as String? ?? '',
+      customerName: map['customerName'] as String? ?? '',
+      amount: amount,
+      note: map['note'] as String? ?? '',
+      paymentType: map['paymentType'] as String? ?? 'Cash',
+      personId: map['personId'] as String? ?? '',
+      date: map['date'] is String ? DateTime.parse(map['date'] as String) : DateTime.now(),
+      dayName: map['dayName'] as String? ?? '',
+      isDeleted: (map['isDeleted'] as int?) == 1,
     );
   }
 

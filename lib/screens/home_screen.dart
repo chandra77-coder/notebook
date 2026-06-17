@@ -20,10 +20,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
-      context.read<DataProvider>().loadData();
-    });
-
+    // Data is already loaded in main.dart via MultiProvider
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -125,7 +122,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             ),
                             TextButton(
                               onPressed: () {
-                                // Navigate to History
+                                // Navigate to History tab - this is handled by parent MainScreen
+                                // Show a hint to the user
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Tap History tab to view all transactions')),
+                                  );
+                                }
                               },
                               child: const Text('View All'),
                             ),

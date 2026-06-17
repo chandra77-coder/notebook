@@ -171,7 +171,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                 const SizedBox(height: 8),
                 DropdownButton<String>(
                   isExpanded: true,
-                  value: _selectedPersonId.isEmpty ? null : _selectedPersonId,
+                  value: _selectedPersonId.isEmpty || !dataProvider.people.any((p) => p.id == _selectedPersonId) ? null : _selectedPersonId,
                   hint: const Text('Select a person'),
                   items: dataProvider.people.map((person) {
                     return DropdownMenuItem(
@@ -197,6 +197,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                       }
 
                       final now = DateTime.now();
+                      final entryDate = widget.entry?.date ?? now;
                       final entry = Entry(
                         id: widget.entry?.id ?? const Uuid().v4(),
                         serviceType: _serviceController.text,
@@ -206,7 +207,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         paymentType: _paymentType,
                         personId: _selectedPersonId,
                         date: widget.entry?.date ?? now,
-                        dayName: DateFormat('EEEE').format(now),
+                        dayName: DateFormat("EEEE").format(entryDate),
                       );
 
                       if (widget.entry == null) {
@@ -248,9 +249,9 @@ class _SmoothSaveButtonState extends State<_SmoothSaveButton> {
       onTapDown: (_) {
         setState(() => _isPressed = true);
       },
-      onTapUp: (_) {
+      onTapUp: (_) async {
         setState(() => _isPressed = false);
-        widget.onPressed();
+        await widget.onPressed();
       },
       onTapCancel: () {
         setState(() => _isPressed = false);

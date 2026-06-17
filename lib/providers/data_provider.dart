@@ -105,8 +105,11 @@ class DataProvider extends ChangeNotifier {
 
   List<Entry> getLastMonthEntries() {
     final now = DateTime.now();
-    final lastMonthStart = DateTime(now.year, now.month - 1, 1);
-    final lastMonthEnd = DateTime(now.year, now.month, 0);
+    // Handle year boundary for January (previous month is December of previous year)
+    final lastMonth = now.month == 1 ? 12 : now.month - 1;
+    final lastYear = now.month == 1 ? now.year - 1 : now.year;
+    final lastMonthStart = DateTime(lastYear, lastMonth, 1);
+    final lastMonthEnd = DateTime(lastYear, lastMonth + 1, 0);
     return _entries.where((e) {
       return e.date.isAfter(lastMonthStart) && e.date.isBefore(lastMonthEnd.add(const Duration(days: 1)));
     }).toList();

@@ -94,6 +94,11 @@ class _HistoryScreenState extends State<HistoryScreen> with TickerProviderStateM
                             onTap: () => setState(() => _selectedFilter = 'This Week'),
                           ),
                           _ModernFilterChip(
+                            label: 'This Month',
+                            isSelected: _selectedFilter == 'This Month',
+                            onTap: () => setState(() => _selectedFilter = 'This Month'),
+                          ),
+                          _ModernFilterChip(
                             label: 'Cash',
                             isSelected: _selectedFilter == 'Cash',
                             onTap: () => setState(() => _selectedFilter = 'Cash'),
@@ -243,7 +248,32 @@ class _ModernHistoryCard extends StatelessWidget {
             ? Colors.blue.shade700
             : Colors.orange.shade700;
 
-    return Container(
+    return Dismissible(
+      key: Key(entry.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.red.shade600,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      onDismissed: (_) {
+        context.read<DataProvider>().deleteEntry(entry.id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Entry deleted'),
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () => context.read<DataProvider>().undoDeleteEntry(),
+            ),
+          ),
+        );
+      },
+      child: Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -317,7 +347,7 @@ class _ModernHistoryCard extends StatelessWidget {
           ),
         ],
       ),
-    );
+      );
   }
 }
 

@@ -15,9 +15,13 @@ class QuickAddButton {
   }
 
   factory QuickAddButton.fromMap(Map<String, dynamic> map) {
+    // Safe type conversion for amount (can be int or double from database)
+    final amountValue = map['defaultAmount'];
+    final amount = amountValue is double ? amountValue : (amountValue as num).toDouble();
+
     return QuickAddButton(
-      label: map['label'] as String,
-      defaultAmount: map['defaultAmount'] as double,
+      label: map['label'] as String? ?? '',
+      defaultAmount: amount,
     );
   }
 }
@@ -46,9 +50,9 @@ class Person {
 
   factory Person.fromMap(Map<String, dynamic> map) {
     return Person(
-      id: map['id'] as String,
-      name: map['name'] as String,
-      avatarColor: map['avatarColor'] as String,
+      id: map['id'] as String? ?? '',
+      name: map['name'] as String? ?? '',
+      avatarColor: map['avatarColor'] as String? ?? '',
       quickAddButtons: (map['quickAddButtons'] as List?)
               ?.map((btn) => QuickAddButton.fromMap(btn as Map<String, dynamic>))
               .toList() ??
