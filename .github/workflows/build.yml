@@ -2,8 +2,7 @@ name: Build and Release APK
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -26,32 +25,30 @@ jobs:
           flutter-version: '3.16.0'
           channel: 'stable'
 
-      - name: Create Project and Build
+      - name: Initialize and Build
         run: |
-          # Create a new project to get clean boilerplate
-          mkdir temp_build
-          cd temp_build
-          flutter create --project-name shopbook --platforms android .
-          cd ..
+          # Create a new project in a temporary directory
+          flutter create --project-name shopbook --platforms android temp_project
           
-          # Move boilerplate to root, but keep our code
-          cp -r temp_build/android .
-          cp temp_build/pubspec.yaml .
-          rm -rf temp_build
+          # Move Android boilerplate to current directory
+          cp -r temp_project/android .
           
-          # Restore our original pubspec to keep dependencies
-          git checkout pubspec.yaml
+          # Cleanup
+          rm -rf temp_project
           
-          # Build
+          # Build APK
           flutter pub get
           flutter build apk --release --no-codesign
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
         with:
           files: build/app/outputs/flutter-apk/app-release.apk
-          tag_name: v1.0.0
-          name: Release v1.0.0
+          tag_name: latest
+          name: "ShopBook Latest Release"
           body: "ShopBook App - Ready to install APK"
+          draft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
