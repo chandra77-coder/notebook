@@ -1,3 +1,4 @@
+import '../models/entry.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -404,4 +405,3 @@ class _ServiceBreakdownList extends StatelessWidget {
 }
 
 // Import Entry from models
-import '../models/entry.dart';
