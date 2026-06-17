@@ -24,11 +24,26 @@ jobs:
           flutter-version: '3.16.0'
           channel: 'stable'
 
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release --no-codesign
+      - name: Initialize and Build APK
+        run: |
+          # Create a temporary project to get the boilerplate
+          mkdir temp_project
+          cd temp_project
+          flutter create --project-name shopbook --platforms android .
+          cd ..
+          
+          # Copy the boilerplate to the root, but keep our lib and pubspec
+          cp -r temp_project/android .
+          cp temp_project/pubspec.yaml .
+          rm -rf temp_project
+          
+          # Restore our specific dependencies in pubspec.yaml
+          # (We'll just overwrite it with our original one since it's already there)
+          git checkout pubspec.yaml
+          
+          # Build the APK
+          flutter pub get
+          flutter build apk --release --no-codesign
 
       - name: Upload APK to artifacts
         uses: actions/upload-artifact@v4
