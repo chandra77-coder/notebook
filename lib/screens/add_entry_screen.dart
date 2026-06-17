@@ -47,6 +47,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.entry == null ? 'Add Entry' : 'Edit Entry'),
+        elevation: 0,
       ),
       body: Consumer<DataProvider>(
         builder: (context, dataProvider, _) {
@@ -186,11 +187,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                 // Save button
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0F6E56),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
+                  child: _SmoothSaveButton(
                     onPressed: () async {
                       if (_serviceController.text.isEmpty) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -222,20 +219,62 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         Navigator.pop(context);
                       }
                     },
-                    child: const Text(
-                      'Save Entry',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
                   ),
                 ),
               ],
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+class _SmoothSaveButton extends StatefulWidget {
+  final Future<void> Function() onPressed;
+
+  const _SmoothSaveButton({required this.onPressed});
+
+  @override
+  State<_SmoothSaveButton> createState() => _SmoothSaveButtonState();
+}
+
+class _SmoothSaveButtonState extends State<_SmoothSaveButton> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) {
+        setState(() => _isPressed = true);
+      },
+      onTapUp: (_) {
+        setState(() => _isPressed = false);
+        widget.onPressed();
+      },
+      onTapCancel: () {
+        setState(() => _isPressed = false);
+      },
+      child: AnimatedScale(
+        scale: _isPressed ? 0.95 : 1.0,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeInOut,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F6E56),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Text(
+            'Save Entry',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
       ),
     );
   }
