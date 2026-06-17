@@ -2,8 +2,7 @@ name: Build and Release APK
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
   build:
@@ -16,7 +15,7 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Setup Flutter
@@ -25,22 +24,11 @@ jobs:
           flutter-version: '3.16.0'
           channel: 'stable'
 
-      - name: Initialize Flutter project safely
-        run: |
-          mkdir backup
-          cp -r lib backup/
-          cp pubspec.yaml backup/
-          flutter create --project-name shopbook --platforms android .
-          rm -rf lib
-          cp -r backup/lib .
-          cp backup/pubspec.yaml .
-          rm -rf backup
-
       - name: Get dependencies
         run: flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release
+        run: flutter build apk --release --no-codesign
 
       - name: Upload APK to artifacts
         uses: actions/upload-artifact@v4
@@ -48,23 +36,3 @@ jobs:
           name: shopbook-release
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
-
-      - name: Create Release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ github.run_number }}
-          release_name: ShopBook Release v${{ github.run_number }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/app/outputs/flutter-apk/app-release.apk
-          asset_name: shopbook-v${{ github.run_number }}.apk
-          asset_content_type: application/vnd.android.package-archive

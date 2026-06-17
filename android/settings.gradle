@@ -1,0 +1,12 @@
+include ':app'
+def flutterProjectRoot = rootProject.projectDir.parentFile.toPath()
+def pluginsFile = new File(flutterProjectRoot.toFile(), '.flutter-plugins')
+if (pluginsFile.exists()) {
+    pluginsFile.withReader('UTF-8') { reader -> reader.lines().forEach { line ->
+        def parts = line.split('=')
+        def name = parts[0]
+        def path = parts[1]
+        include ":$name"
+        project(":$name").projectDir = new File(path)
+    } }
+}
