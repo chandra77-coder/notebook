@@ -30,54 +30,71 @@ class ThemeProvider extends ChangeNotifier {
 
   ThemeData getTheme() {
     const primaryColor = Color(0xFF0F6E56);
-    const surfaceColor = Color(0xFFFAFAFA);
-    const darkSurfaceColor = Color(0xFF1E1E1E);
+    const accentColor = Color(0xFF128C7E);
+    const surfaceColor = Color(0xFFF5F7F6);
+    const darkSurfaceColor = Color(0xFF121212);
 
     if (_isDarkMode) {
       return ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: primaryColor,
+          brightness: Brightness.dark,
+          primary: primaryColor,
+          surface: const Color(0xFF1E1E1E),
+        ),
         primaryColor: primaryColor,
         scaffoldBackgroundColor: darkSurfaceColor,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF2A2A2A),
+          backgroundColor: Color(0xFF1E1E1E),
           elevation: 0,
-        ),
-        cardTheme: CardTheme(
-          color: const Color(0xFF2A2A2A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFF3A3A3A), width: 1),
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFF2A2A2A),
-          selectedItemColor: primaryColor,
-          unselectedItemColor: Color(0xFF888888),
+        cardTheme: CardTheme(
+          color: const Color(0xFF1E1E1E),
+          elevation: 2,
+          shadowColor: Colors.black.withOpacity(0.4),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
         ),
       );
     } else {
       return ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: primaryColor,
+          brightness: Brightness.light,
+          primary: primaryColor,
+          surface: Colors.white,
+        ),
         primaryColor: primaryColor,
         scaffoldBackgroundColor: surfaceColor,
         appBarTheme: const AppBarTheme(
           backgroundColor: primaryColor,
           elevation: 0,
           foregroundColor: Colors.white,
+          centerTitle: true,
+          titleTextStyle: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
         ),
         cardTheme: CardTheme(
           color: Colors.white,
+          elevation: 4,
+          shadowColor: Colors.black.withOpacity(0.05),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFFE0E0E0), width: 1),
+            borderRadius: BorderRadius.circular(16),
           ),
-        ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.white,
-          selectedItemColor: primaryColor,
-          unselectedItemColor: Color(0xFF999999),
         ),
       );
     }
