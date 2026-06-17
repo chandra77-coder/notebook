@@ -103,6 +103,25 @@ class DataProvider extends ChangeNotifier {
     }).toList();
   }
 
+  List<Entry> getLastMonthEntries() {
+    final now = DateTime.now();
+    final lastMonthStart = DateTime(now.year, now.month - 1, 1);
+    final lastMonthEnd = DateTime(now.year, now.month, 0);
+    return _entries.where((e) {
+      return e.date.isAfter(lastMonthStart) && e.date.isBefore(lastMonthEnd.add(const Duration(days: 1)));
+    }).toList();
+  }
+
+  double getLastMonthEarned() {
+    return getLastMonthEntries()
+        .where((e) => e.paymentType != 'Due')
+        .fold(0, (sum, e) => sum + e.amount);
+  }
+
+  double getLastMonthSpent() {
+    return 0; // Spent would be calculated from expense entries if needed
+  }
+
   double getTodayEarned() {
     return getTodayEntries()
         .where((e) => e.paymentType != 'Due')

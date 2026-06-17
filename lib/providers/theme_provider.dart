@@ -3,19 +3,28 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
   bool _isDarkMode = false;
+  String _shopName = 'ShopBook';
   late SharedPreferences _prefs;
 
   bool get isDarkMode => _isDarkMode;
+  String get shopName => _shopName;
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     _isDarkMode = _prefs.getBool('isDarkMode') ?? false;
+    _shopName = _prefs.getString('shopName') ?? 'ShopBook';
     notifyListeners();
   }
 
   Future<void> toggleDarkMode() async {
     _isDarkMode = !_isDarkMode;
     await _prefs.setBool('isDarkMode', _isDarkMode);
+    notifyListeners();
+  }
+
+  Future<void> setShopName(String name) async {
+    _shopName = name;
+    await _prefs.setString('shopName', name);
     notifyListeners();
   }
 

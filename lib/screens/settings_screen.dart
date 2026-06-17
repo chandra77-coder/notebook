@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'dart:io';
 import '../providers/data_provider.dart';
 import '../providers/theme_provider.dart';
 
@@ -17,7 +18,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _shopNameController = TextEditingController(text: 'ShopBook');
+    final themeProvider = context.read<ThemeProvider>();
+    _shopNameController = TextEditingController(text: themeProvider.shopName);
   }
 
   @override
@@ -50,6 +52,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _shopNameController,
+                      onChanged: (value) {
+                        themeProvider.setShopName(value);
+                      },
                       decoration: InputDecoration(
                         hintText: 'Enter shop name',
                         border: OutlineInputBorder(
@@ -148,14 +153,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                             if (result != null && result.files.isNotEmpty) {
                               final file = result.files.first;
-                              // Note: In real app, convert PlatformFile to File
-                              // await dataProvider.importDataFromJson(file);
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Data imported successfully'),
-                                  ),
-                                );
+                              if (file.path != null) {
+                                try {
+                                  final importFile = File(file.path!);
+                                  await dataProvider.importDataFromJson(importFile);
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Data imported successfully'),
+                                      ),
+                                    );
+                                  }
+                                } catch (importError) {
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Import error: $importError')),
+                                    );
+                                  }
+                                }
                               }
                             }
                           } catch (e) {

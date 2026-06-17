@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/data_provider.dart';
+import '../providers/theme_provider.dart';
 import '../models/entry.dart';
-import '../utils/database_helper.dart';
-import 'package:uuid/uuid.dart';
 import 'add_entry_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -25,8 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<DataProvider>(
-      builder: (context, dataProvider, _) {
+    return Consumer2<DataProvider, ThemeProvider>(
+      builder: (context, dataProvider, themeProvider, _) {
         final today = DateTime.now();
         final todayEntries = dataProvider.getTodayEntries();
         final todayEarned = dataProvider.getTodayEarned();
@@ -44,9 +43,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'ShopBook',
-                      style: TextStyle(
+                    Text(
+                      themeProvider.shopName,
+                      style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -174,18 +173,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               );
                             },
                           ),
-                          _QuickAddButton(
-                            icon: Icons.shopping_bag,
-                            label: 'Service 1',
-                            price: '₹500',
-                            onTap: () {},
-                          ),
-                          _QuickAddButton(
-                            icon: Icons.build,
-                            label: 'Service 2',
-                            price: '₹300',
-                            onTap: () {},
-                          ),
+                          // Quick add buttons for people can be added here
+                          // For now, just show the New Entry button
                         ],
                       ),
                     ),

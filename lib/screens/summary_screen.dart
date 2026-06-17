@@ -31,6 +31,10 @@ class _SummaryScreenState extends State<SummaryScreen> {
           entries = dataProvider.getThisMonthEntries();
           totalEarned = dataProvider.getThisMonthEarned();
           totalSpent = dataProvider.getThisMonthSpent();
+        } else if (_selectedPeriod == 'Last Month') {
+          entries = dataProvider.getLastMonthEntries();
+          totalEarned = dataProvider.getLastMonthEarned();
+          totalSpent = dataProvider.getLastMonthSpent();
         } else {
           entries = dataProvider.getTodayEntries();
           totalEarned = dataProvider.getTodayEarned();
