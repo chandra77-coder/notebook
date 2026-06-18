@@ -4,15 +4,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ThemeProvider extends ChangeNotifier {
   bool _isDarkMode = false;
   String _shopName = 'ShopBook';
+  String? _qrImagePath;
   late SharedPreferences _prefs;
 
   bool get isDarkMode => _isDarkMode;
   String get shopName => _shopName;
+  String? get qrImagePath => _qrImagePath;
 
   Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
     _isDarkMode = _prefs.getBool('isDarkMode') ?? false;
     _shopName = _prefs.getString('shopName') ?? 'ShopBook';
+    _qrImagePath = _prefs.getString('qrImagePath');
     notifyListeners();
   }
 
@@ -23,14 +26,26 @@ class ThemeProvider extends ChangeNotifier {
   }
 
   Future<void> setShopName(String name) async {
-    _shopName = name;
-    await _prefs.setString('shopName', name);
+    final cleanName = name.trim().isEmpty ? 'ShopBook' : name.trim();
+    _shopName = cleanName;
+    await _prefs.setString('shopName', cleanName);
+    notifyListeners();
+  }
+
+  Future<void> setQrImagePath(String path) async {
+    _qrImagePath = path;
+    await _prefs.setString('qrImagePath', path);
+    notifyListeners();
+  }
+
+  Future<void> removeQrImagePath() async {
+    _qrImagePath = null;
+    await _prefs.remove('qrImagePath');
     notifyListeners();
   }
 
   ThemeData getTheme() {
     const primaryColor = Color(0xFF0F6E56);
-    const accentColor = Color(0xFF128C7E);
     const surfaceColor = Color(0xFFF5F7F6);
     const darkSurfaceColor = Color(0xFF121212);
 
@@ -59,9 +74,9 @@ class ThemeProvider extends ChangeNotifier {
         cardTheme: CardTheme(
           color: const Color(0xFF1E1E1E),
           elevation: 2,
-          shadowColor: Colors.black.withOpacity(0.4),
+          shadowColor: Colors.black54,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.all(Radius.circular(16)),
           ),
         ),
       );
@@ -90,10 +105,10 @@ class ThemeProvider extends ChangeNotifier {
         ),
         cardTheme: CardTheme(
           color: Colors.white,
-          elevation: 4,
-          shadowColor: Colors.black.withOpacity(0.05),
+          elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+            side: BorderSide(color: Color(0xFFDDE7E2)),
           ),
         ),
       );
